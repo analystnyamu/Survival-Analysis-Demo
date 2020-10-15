@@ -1,0 +1,194 @@
+---
+title: 'WMS705: Statistical Methods for Survival Data'
+author: "Martin Nyamu"
+date: "12/13/2019"
+output:
+  word_document: default
+  html_document: default
+Reg No: W62/12675/2018
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+## Assignment I
+
+# Attempt all the questions
+
+# Question 1
+a) What is survival analysis?
+
+Survival analysis is a statistical technique used to analyze a time to event data. It concerns analysing the time to the occurence of an event eg time until a cancer patient dies.
+
+b) State and explain the main objectives of survival analysis
+
+* Estimate time-to-event for a group of individuals, such as time until second heart-attack for a group of MI patients
+
+* To compare time-to-event between two or more groups, such as treated vs, placebo MI patients in a randomized controlled trial.
+
+* To assess the association of co-variables to time-to-event, such as: does weight, insulin resistance, or cholesterol influence survival time or MI patients?
+
+c) Distinguish between censored and complete data in Survival analysis
+
+complete data is the actual time-to-event data with complete follow-up information, time from entry into the study until a subject has a particular outcome. But, censored data has incomplete follow-up information. Subjects are said to be censored if they are lost to follow up or drop out of the study, or if the study ends before they die or have an outcome of interest.
+
+d) With the aid of examples of your choice, state three situations to which censoring could occur
+
+* Termination of the study before the event occur (administrative censoring) for example in administrative right censoring when the failure event has not occured by the time the study ends
+
+* Death due to cause not considered to be the event of interest for instance in left censored when the death occurs before the study begin.
+
+* Loss to follow-up for example when the patient drop out from the study due to discomfort or the patient emigrate.
+
+```{r include=FALSE, echo=TRUE}
+library(survival)
+surTime<-c(3,4,4,6,7,9,15,21,23,25)
+event<-c(1,1,0,0,1,0,1,1,0,1)
+as.factor(event)
+survtime<-data.frame(surTime, event)
+mysurv1<-Surv(survtime$surTime, survtime$event)
+mysurv1
+
+```
+
+e) Given the survival times; 3, 4, 4+, 7, 9+, 15, 21, 23+, 25
+  i) Obtain the K-M estimate of the survival function.
+  
+```{r include=TRUE, echo=TRUE}
+myfit<-survfit(mysurv1~1)
+summary(myfit)
+```
+  
+   ii) Plot the estimated survivor function. Hence;
+   
+```{r include=TRUE, echo=TRUE}
+{plot(myfit, conf.int="none", ylab = "Survival Probability", xlab = "Time (years)", main="Kaplan-Meier Survival Curve (Survival Function)")
+abline(h=0.5, lty=3, col = "red") # locating the median using horizontal and vertical line
+  abline(v=15, lty=3, col="blue")}
+```
+  
+  iii) Estimate the median survival time
+  
+  The median survival time is *15 years* as depicted on the K-M curve above.
+
+f) The following are the survival times (in months) of some male patients who had malignant bone tumor 2, 3+, 6, 7+, 10, 5, 32, 32, 30, 27, 15+, 16, 16
+
+```{r include=FALSE, echo=TRUE}
+tumor<-c(2,3,6,7,10,5,32,32,30,27,15,16,16)
+event2<-c(1,0,1,0,1,1,1,1,1,1,0,1,1)
+as.factor(event2)
+tumord<-data.frame(tumor, event2)
+
+mysurv2<-Surv(tumord$tumor, tumord$event2)
+mysurv2
+```
+
+i) Obtain the Kaplan-Meier estimate of the survivor function
+```{r include=TRUE, echo=TRUE}
+myfit2<-survfit(mysurv2~1)
+summary(myfit2)
+```
+
+ii) Plot the estimated function obtained in (i). Hence state the estimates of the median survival time and S(7)
+
+```{r include=TRUE, echo=TRUE}
+{plot(myfit2, conf.int="none", ylab = "Survival Probability", xlab = "Time (months)", main="Kaplan-Meier Survival Curve")
+abline(h=0.5, lty=3) # locating the median using horizontal and vertical line
+  abline(v=16, lty=3, col="blue")
+  abline(h=0.752, lty=3)
+  abline(v=7, lty=3, col="red")}
+
+```
+
+From the K-M curve, the median is *16 years* and the *S(7)=0.752*
+
+g) Show that if an individual has hazard rate function $h$, then the survival function of the individual is given by?
+
+$$S(t)=exp\Bigg\{-\int_{0}^{t}h(u)du\Bigg\}$$
+
+__SOLUTION__
+
+$h(t)=\frac{f(t)}{S(t)}$ 
+
+$=\frac{f(t)}{1-F(t)}$
+
+$=\frac{f(t)}{1-\int_{0}^{t}f(s)ds}ds$ 
+
+__Integrate on both sides:__
+
+$\int_{0}^{t}h(s)ds=\int_{0}^{t}\frac{f(s)}{1-\int_{0}^{t}f(s)ds}ds$
+
+$-ln\left[1-\int_{0}^{t}f(s)ds\right]_{0}^{t}+c$
+
+$-\int_{0}^{t}h(s)ds=ln\left[1-\int_{0}^{t}f(s)ds\right]_{0}^{t}+c$
+
+__Exponentiate on both sides__
+
+$exp\left[-\int_{0}^{t}h(s)ds\right]=1-\int_{0}^{t}f(s)ds$
+
+__Differentiate on both sides__
+
+$-h(t)exp\left[-\int_{0}^{t}h(s)ds\right]=-f(t)$ 
+
+$f(t)=h(t)exp\left[-\int_{0}^{t}h(s)ds\right]$
+
+__But since__ 
+
+$h(t)=\frac{f(t)}{S(t)}$
+
+$S(t)=\frac{f(t)}{h(t)}$
+
+__Replace__ $f(t)$  by $h(t)exp\left[-\int_{0}^{t}h(s)ds\right]$ 
+
+$\S(t)=\frac{h(t)exp\left[-\int_{0}^{t}h(s)ds\right]}{h(t)}$
+
+$$\therefore \, S(t)=exp\left[-\int_{0}^{t}h(s)ds\right]$$
+
+
+
+h) State and describe any two methods used to compare survival functions
+
+* __Kaplan-Meier (K-M) method__
+
+Kaplan-Meier method is used for estimating the survial function taking into account the censored data. Besides, it is also possible to include a factor in the model and to obtain the estimated survival for each of the levels of the factor. K-M mehtod gives the probability that an individual patient will survive past a particular time t where at $t=0$, K-M estimator is $1$ with $t$ approaches infinity, the  estimator goes to $0$.
+
+* __The Log Rank Test__
+
+It is a statistical test used to compare survival curves of two groups. It test the null hypothesis of non difference in survival between two or more independent groups. It compares the entire survival experience between groups and can be thought of as a test of whether the survival curves are identical (overlapping) or not. Survival curves are estimated for each group, considered separately, using the K-M method and compared statistically using the log rank test.
+
+
+i) State any four properties of cox proportional hazards regression
+
+* It is robust model so that the results from using the Cox model will closely approximate the results for the correct parametric model (even though the baseline hazard is not specified).
+
+* The estimated hazards are always non-negative
+
+* It takes into account survival time and censoring information. Therefore, it is preferred over the logistic model when survival time information is available and there is censoring. Because you can obtain more information!
+
+* It can estimate the betas (coeficients) and therefore calculate the hazard ratio
+
+* Although the baseline hazard part of the model is unspecified, the betas in the exponential part of the model can easly be estimated. Then, the hazard function h(t,X) and survival function S(t,X) can be also be estimated.
+
+
+j) Using examples of your choice, describe how cox proportional model partial likelihood differs from the maximum likelihood
+
+The likelihood function usually depends on many parameters. Depending on the application, we are usually interested in only a subset of these parameters. For example, in linear regression, interest typically lies in the slope coefficients and not on the error variance.
+
+Denote the parameters we are interested in as β and the parameters that are not of primary interest as θ. The standard way to approach the estimation problem is to maximize the likelihood function so that we obtain estimates of β and θ. However, since the primary interest lies in β partial, profile and marginal likelihood offer alternative ways to estimate β without estimating θ.
+
+In order to see the difference denote the standard likelihood by L(β,θ|data).
+
+Maximum Likelihood
+
+Find β and θ that maximizes L(β,θ|data).
+
+Partial Likelihood
+
+If we can write the likelihood function as:
+
+L(β,θ|data)=L1(β|data)L2(θ|data)
+
+Then we simply maximize L1(β|data).
+

@@ -1,0 +1,17 @@
+---
+title: "coxph model"
+author: "nyamu"
+date: "11/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+url = "http://socserv.mcmaster.ca/jfox/Books/Companion/data/Rossi.txt"
+Rossi = read.table(url, header=TRUE)
+Rossi[1:5, 1:10]
+```
+
